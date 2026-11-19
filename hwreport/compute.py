@@ -8,6 +8,7 @@ homework_id, order, version, original, edited, created_at, edited_at, edited_by,
 has_mentor_changes_block, module_id, module_name, course_name, student_username.
 
 Writes <out_dir>/reviews.csv (one row per review with similarity) and <out_dir>/agg.json.
+agg.json holds aggregates only: no student or mentor e-mails (they stay in reviews.csv).
 """
 import argparse
 import json
@@ -52,14 +53,15 @@ def aggregate(r, courses):
         return dict(
             daily=[dict(day=pd.Timestamp(d).strftime('%d.%m'), n=int((g.day == d).sum()),
                         changed=int((g.changed & (g.day == d)).sum())) for d in days],
-            top=[dict(course=x.short, module=x.module_name, student=x.student_username, editor=x.edited_by,
+            top=[dict(course=x.short, module=x.module_name, self=bool(x.self_edit),
                       homework_id=int(x.homework_id), order=int(x.order), version=int(x.version),
                       sim=round(float(x.similarity), 2), len_o=len(x.o), len_e=len(x.e))
                  for _, x in top.iterrows()])
 
     D = dict(courses=[], modules=[], total=agg(r), all=detail(r), by={},
              days=[dict(label=pd.Timestamp(d).strftime('%d.%m'), iso=str(d)) for d in days])
-    for name, g in r.groupby('course_name', sort=False):
+    order = {c['name']: i for i, c in enumerate(courses)}  # courses.json order, stable across weeks
+    for name, g in sorted(r.groupby('course_name', sort=False), key=lambda t: order[t[0]]):
         c = meta[name]
         D['courses'].append(dict(course=c['short'], full=name, grp=c['group'], target=c['target'], **agg(g)))
         D['by'][c['short']] = detail(g)
