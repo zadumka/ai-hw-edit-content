@@ -75,6 +75,25 @@ def compact(entry, names):
     return out
 
 
+def dump_lines(payload):
+    """JSON with one name / one data row per line: short lines, so the wiki can take the page
+    in chunks of ~20 KB, and few characters, so a weekly republish stays small."""
+    j = lambda x: json.dumps(x, ensure_ascii=False, separators=(',', ':'))
+    out = ['{', f'"updated": {j(payload["updated"])},', '"names": [', ',\n'.join(j(n) for n in payload['names']), '],', '"weeks": [']
+    weeks = []
+    for w in payload['weeks']:
+        parts = []
+        for k, v in w.items():
+            if isinstance(v, list) and v and isinstance(v[0], list):
+                parts.append(f'{j(k)}:[\n' + ',\n'.join(j(x) for x in v) + '\n]')
+            else:
+                parts.append(f'{j(k)}:{j(v)}')
+        weeks.append('{\n' + ',\n'.join(parts) + '\n}')
+    out.append(',\n'.join(weeks))
+    out += [']', '}']
+    return '\n'.join(out)
+
+
 def read_weeks(html_path):
     m = DATA_RE.search(open(html_path, encoding='utf-8').read())
     if not m:
@@ -101,8 +120,7 @@ def main(argv=None):
                              a.end_inclusive, a.asof, a.check), names)
     weeks = sorted([w for w in weeks if w['start'] != new['start']] + [new], key=lambda w: w['start'])[-a.keep:]
     payload = dict(updated=a.asof, names=names, weeks=weeks)
-    # indent=0 keeps every value on its own short line: the wiki takes a page in chunks of ~20 KB
-    data = json.dumps(payload, ensure_ascii=False, indent=0).replace('</', '<\\/')
+    data = dump_lines(payload).replace('</', '<\\/')
     page = open(os.path.join(HERE, 'dashboard_template.html'), encoding='utf-8').read()
     page = page.replace('__VECTORS__', VECTORS).replace('__DATA__', data)
     left = re.findall(r'__[A-Z_]+__', page)
