@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Правки менторів в AI-відгуках</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one column, summary first; tiles -> courses vs target -> modules over target -> module table -> days -> rewritten reviews -> methodology.
+   Grey by default, blue only for what breaks a target. */
+:root{
+  --bg:#f6f6f4; --surface:#fcfcfb; --line:#e3e2dd; --ink:#0b0b0b; --ink2:#52514e; --ink3:#86857f;
+  --bar:#c9c8c2; --accent:#2a78d6; --accent-soft:#e3eefb; --warn-bg:#fff4d6; --warn-ink:#5c4300;
+  --display:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121211; --surface:#1a1a19; --line:#32322f; --ink:#f0efec; --ink2:#c3c2b7; --ink3:#8d8c84;
+    --bar:#55544f; --accent:#3987e5; --accent-soft:#1b2c44; --warn-bg:#3a2f10; --warn-ink:#f3dc9a;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121211; --surface:#1a1a19; --line:#32322f; --ink:#f0efec; --ink2:#c3c2b7; --ink3:#8d8c84;
+  --bar:#55544f; --accent:#3987e5; --accent-soft:#1b2c44; --warn-bg:#3a2f10; --warn-ink:#f3dc9a;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--display);font-size:15px;line-height:1.45}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 56px;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-direction:column;gap:6px}
+h1{font-size:26px;line-height:1.2;margin:0;font-weight:700;text-wrap:balance}
+.sub{color:var(--ink2)}
+.banner{background:var(--warn-bg);color:var(--warn-ink);border-radius:8px;padding:10px 14px;font-weight:600}
+.banner span{font-weight:400}
+.verdict{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:16px 18px}
+.verdict h2{margin:0 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+.verdict p{margin:0;font-size:17px;max-width:75ch}
+.verdict ul{margin:10px 0 0;padding-left:20px;color:var(--ink2);max-width:80ch}
+.verdict li+li{margin-top:4px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.tile .lab{color:var(--ink2);font-size:13px}
+.tile .num{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .base{font-size:13px;color:var(--ink)}
+.tile .ctx{font-size:12px;color:var(--ink3);border-top:1px solid var(--line);padding-top:6px;margin-top:4px}
+section.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}
+section.card h3{margin:0 0 4px;font-size:17px;font-weight:600;text-wrap:balance}
+.hint{color:var(--ink2);font-size:13px;margin:0 0 14px;max-width:85ch}
+.foot{color:var(--ink3);font-size:12px;margin:14px 0 0;font-family:var(--mono)}
+/* course bars vs target */
+.cb{display:grid;grid-template-columns:minmax(120px,170px) 1fr minmax(150px,auto);gap:8px 14px;align-items:center}
+.cb .name{font-size:14px}
+.cb .name small{display:block;color:var(--ink3);font-size:11px}
+.cb .track{position:relative;height:18px;background:transparent;border-bottom:1px solid var(--line)}
+.cb .fill{position:absolute;left:0;top:2px;height:14px;background:var(--bar);border-radius:0 4px 4px 0;min-width:2px}
+.cb .fill.hot{background:var(--accent)}
+.cb .tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+.cb .val{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cb .val b{font-weight:600}
+.axisrow{display:grid;grid-template-columns:minmax(120px,170px) 1fr minmax(150px,auto);gap:14px;font-size:11px;color:var(--ink3);margin-top:6px}
+.axisrow .sc{position:relative;height:14px}
+.axisrow .sc span{position:absolute;transform:translateX(-50%)}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--ink2);margin:0 0 12px;flex-wrap:wrap;align-items:center}
+.legend i{display:inline-block;vertical-align:middle;margin-right:6px}
+/* days */
+.days{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:end;height:170px;border-bottom:1px solid var(--line);padding:0 4px}
+.day{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+.day .col{width:min(46px,70%);background:var(--bar);border-radius:4px 4px 0 0}
+.day .v{font-size:13px;font-variant-numeric:tabular-nums;text-align:center;line-height:1.2}
+.day .v small{display:block;color:var(--ink3);font-size:11px}
+.dlabels{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:6px 4px 0;font-size:12px;color:var(--ink2);text-align:center}
+.axis{font-size:12px;color:var(--ink3);margin:0 0 8px}
+/* tables */
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:820px}
+th{font-weight:500;color:var(--ink2);font-size:12px;text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hot td{background:var(--accent-soft)}
+td .mini{display:flex;align-items:center;gap:8px}
+td .mini i{display:block;height:10px;background:var(--bar);border-radius:0 3px 3px 0;min-width:1px}
+tr.hot td .mini i{background:var(--accent)}
+.tag{display:inline-block;font-size:11px;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:0 7px;margin-left:6px;white-space:nowrap}
+.tag.same{color:var(--warn-ink);border-color:var(--warn-ink);background:var(--warn-bg);margin-left:0}
+.over{font-weight:600}
+.muted{color:var(--ink3)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center}
+.controls button{font:inherit;font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.controls button:focus-visible,.controls input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.controls label{font-size:13px;color:var(--ink2);display:flex;gap:6px;align-items:center;margin-left:8px}
+.switch{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;position:sticky;top:0;z-index:5}
+.swlab{font-size:12px;color:var(--ink2);padding-top:6px;min-width:40px}
+.switch .controls{margin:0}
+.empty{color:var(--ink3);font-size:14px;padding:8px 0}
+.count{font-size:12px;color:var(--ink3);margin-left:auto}
+#top{font-size:13px;min-width:1080px}
+.method dl{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;margin:0;font-size:14px}
+.method dt{color:var(--ink2)}
+.method dd{margin:0;max-width:80ch}
+code{font-family:var(--mono);font-size:12.5px}
+@media (max-width:820px){.tiles{grid-template-columns:repeat(2,1fr)}.method dl{grid-template-columns:1fr}.cb,.axisrow{grid-template-columns:100px 1fr}.cb .val{grid-column:2}.axisrow>div:last-child{display:none}}
+@media (max-width:420px){.tiles{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Правки менторів в AI-відгуках на домашні завдання</h1>
+  <div class="sub" id="sub"></div>
+</header>
+
+<div class="banner">Внутрішня версія з поштами студентів і редакторів. <span>У спільну вікі компанії таку сторінку публікувати не можна.</span></div>
+
+<nav class="switch" aria-label="Курс">
+  <div class="swlab">Курс</div>
+  <div class="controls" id="sw"></div>
+</nav>
+
+<div class="verdict">
+  <h2>Висновок</h2>
+  <p id="v1"></p>
+  <ul id="v2"></ul>
+</div>
+
+<div class="tiles" id="tiles"></div>
+
+<section class="card">
+  <h3 id="h-bars"></h3>
+  <p class="hint" id="p-bars"></p>
+  <div class="legend"><span><i style="width:18px;height:10px;background:var(--bar);border-radius:0 3px 3px 0"></i>в межах цілі</span><span><i style="width:18px;height:10px;background:var(--accent);border-radius:0 3px 3px 0"></i>понад ціль</span><span><i style="width:2px;height:14px;background:var(--ink)"></i>ціль</span></div>
+  <div class="cb" id="bars"></div>
+  <div class="axisrow"><div></div><div class="sc" id="scale"></div><div></div></div>
+  <p class="foot">станом на __ASOF__ · відсоток редагування = 100 − середня схожість · adult_prod_lms_core.ai_homework_response_task</p>
+</section>
+
+<section class="card">
+  <h3 id="h-mod"></h3>
+  <p class="hint">Модулі відсортовано за тим, наскільки відсоток редагування близький до цілі курсу.</p>
+  <div class="controls" id="chips"></div>
+  <div class="scroll"><table id="modules"></table></div>
+  <p class="foot">станом на __ASOF__ · групування за training_module · середня схожість збігається з тижневими HTML-звітами до сотих</p>
+</section>
+
+<section class="card">
+  <h3 id="h-days"></h3>
+  <p class="hint">Змінені відгуки за датою створення відгуку. Під числом вказано, зі скількох збережених того дня.</p>
+  <p class="axis">Змінено відгуків, шт.</p>
+  <div class="days" id="days"></div>
+  <div class="dlabels" id="dlabels"></div>
+  <p class="foot">станом на __ASOF__ · created_at __PERIOD_SHORT__</p>
+</section>
+
+<section class="card">
+  <h3 id="h-top"></h3>
+  <p class="hint">Змінені відгуки з найнижчою схожістю, до 20. Пошта студента потрібна, щоб знайти ДЗ на платформі. «Редагував» показує акаунт із поля <code>edited_by</code>; позначка «= студент» означає, що це той самий акаунт, що здав ДЗ. Довжина в символах після очищення від розмітки.</p>
+  <div class="scroll"><table id="top"></table></div>
+  <p class="foot">станом на __ASOF__ · homework.student_username · ai_homework_response_task.edited_by, order (номер задачі), version</p>
+</section>
+
+<section class="card method">
+  <h3>Методологія</h3>
+  <dl>
+    <dt>Метрика</dt><dd>Поза каноном метрик GoIT. Розрахунок за ноутбуком <code>analytics (1).ipynb</code> команди QA.</dd>
+    <dt>Схожість (similarity)</dt><dd>Середнє двох оцінок за шкалою 0–100: косинусна схожість TF-IDF, перерахована як 50 × (cos + 1), та Word Mover's Distance на векторах fastText <code>cc.uk.300</code>, перерахована як 100 × (1 − WMD / 3). Перед розрахунком з обох текстів знімається HTML і Markdown. TF-IDF рахується окремо для кожного курсу, як у тижневих звітах.</dd>
+    <dt>Відсоток редагування</dt><dd>100 − середня схожість за всіма збереженими відгуками курсу чи модуля.</dd>
+    <dt>Глибина правки</dt><dd>100 − середня схожість лише за зміненими відгуками: наскільки сильно переписують відгук, коли вже правлять.</dd>
+    <dt>Змінено</dt><dd>Очищений текст правки відрізняється від очищеного тексту AI.</dd>
+    <dt>Цілі</dt><dd>Максимально допустимий відсоток редагування: HTML, JS, React, Node, DA (усі блоки): 1,00 %; AI (усі блоки): 3,00 %; Web Design і Mobile Design: 5,00 %; Service Design: 10,00 %. Джерело: команда QA.</dd>
+    <dt>Дані</dt><dd><code>adult_prod_lms_core.ai_homework_response_task</code>, модуль і курс через <code>homework</code> → <code>training_module</code>; пошта студента з <code>homework.student_username</code>.</dd>
+    <dt>Фільтри</dt><dd><code>edited IS NOT NULL</code>, тобто відгук збережено; без акаунтів QA (<code>edited_by NOT LIKE '%qa%'</code>); __N_COURSES__ курсів з перемикача вгорі.</dd>
+    <dt>Період</dt><dd>__PERIOD_SQL__</dd>
+    <dt>Хто редагував</dt><dd>Поле <code>edited_by</code>. У __SELF__ з __CHANGED__ змінених відгуків воно збігається з акаунтом студента. Причину треба уточнити в розробників.</dd>
+    <dt>Порівняння</dt><dd>__COMPARISON__</dd>
+    <dt>Звірка</dt><dd>__CHECK__</dd>
+    <dt>Актуальність</dt><dd>Дані вивантажено __ASOF__. Словник векторів: __VECTORS__.</dd>
+  </dl>
+</section>
+
+</div>
+<script>
+const D = __DATA__;
+const fmt = (x,d=2) => x==null ? "—" : x.toFixed(d).replace(".",",");
+const pc = x => x==null ? "—" : fmt(x)+" %";
+const pct = (a,b) => b ? (100*a/b).toFixed(1).replace(".",",")+" %" : "—";
+const el = (t,c,h) => {const e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e;};
+const $ = id => document.getElementById(id);
+const NO = "Мин. тиждень: немає даних";
+const ALL = "Усі курси";
+const GR=["Усі","Frontend","DA","Design","AI"];
+const short = s => s.length>60 ? s.slice(0,58)+"…" : s;
+const pl = (n,a,b,c) => {const m=n%10,h=n%100; return n+" "+(m==1&&h!=11?a:(m>=2&&m<=4&&(h<12||h>14)?b:c));};
+let cur = ALL, grp = "Усі", onlyChanged = true;
+
+const ids = {}; D.courses.forEach((c,i)=>ids[c.course]="c"+i);
+function fromHash(){const h=location.hash.slice(1); const c=D.courses.find(c=>ids[c.course]==h); return c?c.course:ALL;}
+
+function render(){
+  const isAll = cur==ALL;
+  const C = isAll ? null : D.courses.find(c=>c.course==cur);
+  const T = isAll ? D.total : C;
+  const det = isAll ? D.all : D.by[cur];
+  const mods = D.modules.filter(m=>isAll||m.course==cur);
+  const over = mods.filter(m=>m.edit>m.target).sort((a,b)=>b.edit/b.target-a.edit/a.target);
+  const overC = D.courses.filter(c=>c.edit>c.target);
+
+  // switcher state
+  $("sw").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.c==cur));
+  $("sub").textContent = (isAll ? D.courses.length+" курсів" : C.full) + " · відгуки, створені __PERIOD_HUMAN__";
+
+  // verdict
+  const v2=[];
+  if(isAll){
+    $("v1").textContent = (overC.length? "Ціль перевищили "+overC.length+" з "+D.courses.length+" курсів. " : "Усі "+D.courses.length+" курсів у межах цілей. ") +
+      "Ціль перевищили "+over.length+" з "+mods.length+" модулів"+(over.length? ", найсильніше "+over[0].course+", «"+short(over[0].module)+"»: "+pc(over[0].edit)+" при цілі "+pc(over[0].target)+".":".");
+    const des=D.courses.filter(c=>c.course.includes("Web")||c.course.includes("Mobile"));
+    const dc=des.reduce((s,c)=>s+c.changed,0), dn=des.reduce((s,c)=>s+c.n,0);
+    v2.push("Майже всі правки в дизайні: Web і Mobile Design дали "+dc+" з "+T.changed+" змінених відгуків, хоча це лише "+pct(dn,T.n)+" усіх збережених.");
+  } else {
+    const ok = C.edit<=C.target;
+    $("v1").textContent = C.course+": відсоток редагування "+pc(C.edit)+" при цілі "+pc(C.target)+", "+(ok?"в межах цілі":"понад ціль")+". "+
+      (over.length? "Ціль перевищили "+over.length+" з "+mods.length+" модулів, найсильніше «"+short(over[0].module)+"»: "+pc(over[0].edit)+"." : "Жоден із "+mods.length+" модулів ціль не перевищив.");
+    if(!T.changed) v2.push("Цього тижня жоден збережений відгук не змінено: усі "+T.n+" збігаються з текстом AI.");
+    else v2.push("Змінено "+T.changed+" з "+T.n+" збережених відгуків ("+pct(T.changed,T.n)+"), глибина правки "+pc(T.depth)+".");
+    const small = over.filter(m=>m.n<15);
+    if(small.length) v2.push("База мала: "+small.map(m=>"«"+short(m.module)+"» має "+pl(m.n,"відгук","відгуки","відгуків")).join("; ")+". Один змінений відгук там помітно зсуває відсоток.");
+  }
+  if(T.changed){
+    v2.push("У "+T.self_changed+" з "+T.changed+" змінених відгуків поле <code>edited_by</code> збігається з акаунтом студента, а не ментора. Поки це не з'ясовано з розробниками, ці правки не можна вважати правками менторів.");
+  }
+  if(over.length) v2.push("Що перевірити: промпт перевірки для "+(over.length==1?"модуля":"модулів")+" понад ціль"+(over.length>1?", у першу чергу «"+short(over[0].module)+"»":"")+".");
+  $("v2").innerHTML = v2.map(x=>"<li>"+x+"</li>").join("");
+
+  // tiles
+  const tiles = isAll ? [
+    ["Курсів понад ціль", overC.length+" з "+D.courses.length, "кожен курс порівнюється зі своєю ціллю"],
+    ["Модулів понад ціль", over.length+" з "+mods.length, over.length? [...new Set(over.map(m=>m.course))].join(", ") : "усі в межах цілей"],
+    ["Змінено відгуків", pct(T.changed,T.n), T.changed+" з "+T.n.toLocaleString("uk")+" збережених"],
+    ["Глибина правки", pc(T.depth), "середня за "+T.changed+" зміненими відгуками"]
+  ] : [
+    ["Відсоток редагування", pc(C.edit), "ціль: не більше "+pc(C.target)+" · "+(C.edit<=C.target?"в межах цілі":"понад ціль")],
+    ["Модулів понад ціль", over.length+" з "+mods.length, over.length? short(over[0].module) : "усі в межах цілі"],
+    ["Змінено відгуків", pct(T.changed,T.n), T.changed+" з "+T.n.toLocaleString("uk")+" збережених"],
+    ["Глибина правки", pc(T.depth), T.changed? "середня за "+T.changed+" зміненими відгуками" : "немає змінених відгуків"]
+  ];
+  $("tiles").innerHTML="";
+  tiles.forEach(([l,n,b])=>{const t=el("div","tile");t.append(el("div","lab",l),el("div","num",n),el("div","base",b),el("div","ctx",NO));$("tiles").append(t);});
+
+  // bars: all -> courses, course -> its modules
+  const items = isAll ? D.courses.map(c=>({name:c.course,sub:c.grp,edit:c.edit,target:c.target,changed:c.changed,n:c.n,title:c.full}))
+                      : mods.map(m=>({name:short(m.module),sub:"",edit:m.edit,target:m.target,changed:m.changed,n:m.n,title:m.module}));
+  items.sort((a,b)=>b.edit/b.target-a.edit/a.target||b.n-a.n);
+  const mxv = Math.max(...items.map(x=>Math.max(x.edit,x.target)));
+  const SC = mxv<=3.5?4: mxv<=5.5?6 : mxv<=10.5?10.5 : Math.ceil(mxv+0.5);
+  if(isAll){
+    $("h-bars").textContent = (overC.length? overC.length+" з "+D.courses.length+" курсів понад ціль" : "Усі "+D.courses.length+" курсів у межах цілей") + ", найближче до цілі "+items[0].name+": "+pc(items[0].edit)+" при цілі "+pc(items[0].target);
+    $("p-bars").textContent = "Відсоток редагування за курсами. Чорна риска на кожному рядку показує ціль цього курсу. Шкала однакова для всіх рядків.";
+  } else {
+    $("h-bars").textContent = over.length ? "Ціль "+pc(C.target)+" перевищили "+over.length+" з "+mods.length+" модулів, найвище «"+short(over[0].module)+"»: "+pc(over[0].edit)
+                                          : "Усі "+mods.length+" модулів у межах цілі "+pc(C.target)+", найвище «"+items[0].name+"»: "+pc(items[0].edit);
+    $("p-bars").textContent = "Відсоток редагування за модулями курсу "+C.course+". Чорна риска показує ціль курсу.";
+  }
+  $("bars").innerHTML=""; $("scale").innerHTML="";
+  items.forEach(c=>{
+    const tr=el("div","track"); const f=el("div","fill"+(c.edit>c.target?" hot":"")); f.style.width=Math.max(c.edit/SC*100,0.3)+"%";
+    const tk=el("i","tick"); tk.style.left="calc("+(c.target/SC*100)+"% - 1px)";
+    tr.append(f,tk); tr.title=c.title+": "+pc(c.edit)+" при цілі "+pc(c.target)+"; змінено "+c.changed+" з "+c.n;
+    $("bars").append(el("div","name",c.name+(c.sub?"<small>"+c.sub+"</small>":"")),tr,
+      el("div","val","<b>"+pc(c.edit)+"</b> із "+pc(c.target)+" · змінено "+c.changed+" з "+c.n));
+  });
+  const ticks = SC<=4?[0,1,2,3,4]: SC<=6?[0,1,3,5,6]: SC<=10.5?[0,1,3,5,10]:[0,5,10,SC];
+  ticks.forEach(v=>{const s=el("span",null,v+" %");s.style.left=(v/SC*100)+"%";$("scale").append(s);});
+
+  // modules table
+  $("chips").style.display = isAll ? "" : "none";
+  $("h-mod").textContent = isAll ? "Ціль перевищили "+over.length+" модулі з "+mods.length+(over.length? ", у "+over.filter(m=>m.n<15).length+" з них база менше 15 відгуків":"")
+                                 : "Модулі курсу "+C.course+": "+over.length+" з "+mods.length+" понад ціль";
+  modules();
+
+  // days
+  const dd=det.daily, mx=Math.max(1,...dd.map(d=>d.changed));
+  const mn=Math.min(...dd.map(d=>d.changed)), mxc=Math.max(...dd.map(d=>d.changed));
+  $("h-days").textContent = T.changed ? "Змінених відгуків "+mn+"–"+mxc+" на день" + (isAll? ", сплеску в жоден із днів немає" : "") : "Цього тижня змінених відгуків немає в жоден день";
+  $("days").innerHTML=""; $("dlabels").innerHTML="";
+  const WD=["Нд","Пн","Вт","Ср","Чт","Пт","Сб"]; const dn={}; (D.days||[]).forEach(x=>{dn[x.label]=WD.at(new Date(x.iso+"T12:00:00Z").getUTCDay())+" "+x.label;});
+  dd.forEach(d=>{const c=el("div","day");c.title=d.day+": змінено "+d.changed+" з "+d.n;
+    c.append(el("div","v",d.changed+"<small>з "+d.n.toLocaleString("uk")+"</small>"));const b=el("div","col");b.style.height=(d.changed/mx*105)+"px";c.append(b);
+    $("days").append(c);$("dlabels").append(el("div",null,dn[d.day]||d.day));});
+
+  // top
+  const tp=det.top, ss=tp.filter(r=>r.editor==r.student).length;
+  $("h-top").textContent = tp.length ? "Найбільш переписані відгуки: у "+ss+" з "+tp.length+" редагує акаунт самого студента" : "Змінених відгуків немає";
+  $("top").innerHTML = tp.length ? "<thead><tr><th>Курс</th><th>Модуль</th><th>Студент</th><th class='n'>homework_id</th><th class='n'>Задача</th><th class='n'>Версія</th><th>Редагував</th><th class='n'>Схожість</th><th class='n'>Довжина: AI → правка</th></tr></thead><tbody>"+
+    tp.map(r=>"<tr><td>"+r.course+"</td><td>"+r.module+"</td><td>"+r.student+"</td><td class='n'>"+r.homework_id+"</td><td class='n'>"+r.order+"</td><td class='n'>"+r.version+"</td><td>"+(r.editor==r.student?"<span class='tag same'>= студент</span>":r.editor)+"</td><td class='n'>"+fmt(r.sim)+"</td><td class='n'>"+r.len_o+" → "+r.len_e+"</td></tr>").join("")+"</tbody>"
+    : "<tbody><tr><td class='empty'>Немає даних: цього тижня в курсі жоден відгук не змінено.</td></tr></tbody>";
+}
+
+function modules(){
+  const isAll=cur==ALL;
+  const all=D.modules.filter(m=>isAll ? (grp=="Усі"||D.courses.find(c=>c.course==m.course).grp==grp) : m.course==cur);
+  const rows=all.filter(m=>!onlyChanged||m.changed>0).sort((a,b)=>b.edit/b.target-a.edit/a.target||b.changed-a.changed);
+  const mm=Math.max(...D.modules.map(m=>m.edit/m.target),1);
+  const t=$("modules");
+  t.innerHTML="<thead><tr>"+(isAll?"<th>Курс</th>":"")+"<th>Модуль</th><th class='n'>Збережено</th><th>Відсоток редагування</th><th class='n'>Ціль</th><th class='n'>Змінено</th><th class='n'>Глибина правки</th><th class='n'>Редагував студент</th></tr></thead>";
+  const tb=el("tbody");
+  if(!rows.length) tb.innerHTML="<tr><td class='empty' colspan='8'>Модулів з правками немає. Зніміть позначку «Лише модулі з правками», щоб побачити всі.</td></tr>";
+  rows.forEach(m=>{const hot=m.edit>m.target;const tr=el("tr",hot?"hot":"");
+    tr.innerHTML=(isAll?"<td>"+m.course+"</td>":"")+"<td>"+m.module+(hot?"<span class='tag'>понад ціль</span>":"")+"</td><td class='n'>"+m.n+"</td>"+
+      "<td><div class='mini'><i style='width:"+(m.edit/m.target/mm*80)+"px'></i><span"+(hot?" class='over'":"")+">"+pc(m.edit)+"</span></div></td>"+
+      "<td class='n'>"+pc(m.target)+"</td>"+
+      "<td class='n'>"+(m.changed?pct(m.changed,m.n)+", "+m.changed+" з "+m.n:"<span class='muted'>0 з "+m.n+"</span>")+"</td>"+
+      "<td class='n'>"+pc(m.depth)+"</td><td class='n'>"+(m.changed?m.self_changed+" з "+m.changed:"<span class='muted'>—</span>")+"</td>";
+    tb.append(tr);});
+  t.append(tb);
+  $("cnt").textContent="Показано "+rows.length+" з "+all.length+" модулів";
+}
+
+// course switcher
+const sw=$("sw");
+[ALL,...D.courses.map(c=>c.course)].forEach(n=>{const c=D.courses.find(x=>x.course==n);
+  const b=el("button",null,n+(c&&c.edit>c.target?" ●":""));b.type="button";b.dataset.c=n;
+  b.onclick=()=>{cur=n; try{history.replaceState(null,"",n==ALL?location.pathname+location.search:"#"+ids[n]);}catch(e){} render();};
+  sw.append(b);});
+// module filters
+const ch=$("chips");
+GR.forEach(n=>{const b=el("button",null,n);b.type="button";b.setAttribute("aria-pressed",n==grp);
+  b.onclick=()=>{grp=n;ch.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.textContent==grp));modules();};ch.append(b);});
+const lb=el("label");const cbx=el("input");cbx.type="checkbox";cbx.id="onlych";cbx.checked=true;cbx.onchange=()=>{onlyChanged=cbx.checked;modules();};
+lb.append(cbx,document.createTextNode("Лише модулі з правками"));ch.append(lb);
+const cn=el("span","count");cn.id="cnt";
+const tblCard=$("modules").closest("section"); tblCard.insertBefore(cn, tblCard.querySelector(".scroll"));
+cn.style.display="block"; cn.style.margin="0 0 8px";
+window.addEventListener("hashchange",()=>{cur=fromHash();render();});
+cur=fromHash(); render();
+</script>
+</body>
+</html>

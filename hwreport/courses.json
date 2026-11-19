@@ -1,0 +1,18 @@
+{
+  "_comment": "Edit-percentage targets set by the QA team. name must match course.name in adult_prod_lms_core exactly; id is course.id.",
+  "courses": [
+    {"name": "HTML+CSS 5.0", "id": 52888340, "short": "HTML+CSS 5.0", "group": "Frontend", "target": 1},
+    {"name": "JavaScript 5.0", "id": 54064069, "short": "JavaScript 5.0", "group": "Frontend", "target": 1},
+    {"name": "React.js+Next.js 2.0", "id": 48824017, "short": "React+Next 2.0", "group": "Frontend", "target": 1},
+    {"name": "Node.js 4.0", "id": 48875603, "short": "Node.js 4.0", "group": "Frontend", "target": 1},
+    {"name": "DA. 4.0. Блок 1. Основи аналізу даних", "id": 49869144, "short": "DA Блок 1", "group": "DA", "target": 1},
+    {"name": "DA.1.0 Блок 2. Візуалізація даних", "id": 53172877, "short": "DA Блок 2", "group": "DA", "target": 1},
+    {"name": "DA. 1.0. Блок 3. Python + A/B tests", "id": 53978472, "short": "DA Блок 3", "group": "DA", "target": 1},
+    {"name": "Web Design 6.0", "id": 50705119, "short": "Web Design 6.0", "group": "Design", "target": 5},
+    {"name": "Mobile Design 6.0", "id": 52984675, "short": "Mobile Design 6.0", "group": "Design", "target": 5},
+    {"name": "Service Design 4.0", "id": 51998859, "short": "Service Design 4.0", "group": "Design", "target": 10},
+    {"name": "AI Automator. Prompt Engineering & AI Agents 2.0", "id": 54198009, "short": "AI PE", "group": "AI", "target": 3},
+    {"name": "AI Automator. Marketing 2.0", "id": 54594228, "short": "AI Market", "group": "AI", "target": 3},
+    {"name": "AI Automator. Sales Automation 2.0", "id": 54594276, "short": "AI Sales", "group": "AI", "target": 3}
+  ]
+}
