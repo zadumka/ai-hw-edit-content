@@ -93,7 +93,11 @@ tr.hot td .mini i{background:var(--accent)}
 .controls button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .controls button:focus-visible,.controls input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .controls label{font-size:13px;color:var(--ink2);display:flex;gap:6px;align-items:center;margin-left:8px}
-.switch{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;position:sticky;top:0;z-index:5}
+.switch{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;position:sticky;top:0;z-index:5}
+.swrow{display:flex;gap:12px;align-items:flex-start}
+.swrow select{font:inherit;font-size:14px;padding:5px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.swrow select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.swnote{font-size:12px;color:var(--ink3);padding-top:7px}
 .swlab{font-size:12px;color:var(--ink2);padding-top:6px;min-width:40px}
 .switch .controls{margin:0}
 .empty{color:var(--ink3);font-size:14px;padding:8px 0}
@@ -115,11 +119,9 @@ code{font-family:var(--mono);font-size:12.5px}
   <div class="sub" id="sub"></div>
 </header>
 
-<div class="banner">Внутрішня версія з поштами студентів і редакторів. <span>У спільну вікі компанії таку сторінку публікувати не можна.</span></div>
-
-<nav class="switch" aria-label="Курс">
-  <div class="swlab">Курс</div>
-  <div class="controls" id="sw"></div>
+<nav class="switch" aria-label="Період і курс">
+  <div class="swrow"><label class="swlab" for="period">Період</label><select id="period"></select><span class="swnote" id="period-note"></span></div>
+  <div class="swrow"><div class="swlab">Курс</div><div class="controls" id="sw"></div></div>
 </nav>
 
 <div class="verdict">
@@ -136,7 +138,7 @@ code{font-family:var(--mono);font-size:12.5px}
   <div class="legend"><span><i style="width:18px;height:10px;background:var(--bar);border-radius:0 3px 3px 0"></i>в межах цілі</span><span><i style="width:18px;height:10px;background:var(--accent);border-radius:0 3px 3px 0"></i>понад ціль</span><span><i style="width:2px;height:14px;background:var(--ink)"></i>ціль</span></div>
   <div class="cb" id="bars"></div>
   <div class="axisrow"><div></div><div class="sc" id="scale"></div><div></div></div>
-  <p class="foot">станом на __ASOF__ · відсоток редагування = 100 − середня схожість · adult_prod_lms_core.ai_homework_response_task</p>
+  <p class="foot">станом на <span class="w-asof"></span> · відсоток редагування = 100 − середня схожість · adult_prod_lms_core.ai_homework_response_task</p>
 </section>
 
 <section class="card">
@@ -144,7 +146,7 @@ code{font-family:var(--mono);font-size:12.5px}
   <p class="hint">Модулі відсортовано за тим, наскільки відсоток редагування близький до цілі курсу.</p>
   <div class="controls" id="chips"></div>
   <div class="scroll"><table id="modules"></table></div>
-  <p class="foot">станом на __ASOF__ · групування за training_module · середня схожість збігається з тижневими HTML-звітами до сотих</p>
+  <p class="foot">станом на <span class="w-asof"></span> · групування за training_module · середня схожість збігається з тижневими HTML-звітами до сотих</p>
 </section>
 
 <section class="card">
@@ -153,14 +155,14 @@ code{font-family:var(--mono);font-size:12.5px}
   <p class="axis">Змінено відгуків, шт.</p>
   <div class="days" id="days"></div>
   <div class="dlabels" id="dlabels"></div>
-  <p class="foot">станом на __ASOF__ · created_at __PERIOD_SHORT__</p>
+  <p class="foot">станом на <span class="w-asof"></span> · created_at <span class="w-short"></span></p>
 </section>
 
 <section class="card">
   <h3 id="h-top"></h3>
-  <p class="hint">Змінені відгуки з найнижчою схожістю, до 20. Пошта студента потрібна, щоб знайти ДЗ на платформі. «Редагував» показує акаунт із поля <code>edited_by</code>; позначка «= студент» означає, що це той самий акаунт, що здав ДЗ. Довжина в символах після очищення від розмітки.</p>
+  <p class="hint">Змінені відгуки з найнижчою схожістю, до 20. Пошт тут немає: щоб знайти студента й ментора, відкрийте ДЗ на платформі за <code>homework_id</code>. «Хто редагував: студент» означає, що в полі <code>edited_by</code> стоїть акаунт, який здав це ДЗ. Довжина в символах після очищення від розмітки.</p>
   <div class="scroll"><table id="top"></table></div>
-  <p class="foot">станом на __ASOF__ · homework.student_username · ai_homework_response_task.edited_by, order (номер задачі), version</p>
+  <p class="foot">станом на <span class="w-asof"></span> · ai_homework_response_task: homework_id, order (номер задачі), version; edited_by порівнюється з homework.student_username</p>
 </section>
 
 <section class="card method">
@@ -172,55 +174,85 @@ code{font-family:var(--mono);font-size:12.5px}
     <dt>Глибина правки</dt><dd>100 − середня схожість лише за зміненими відгуками: наскільки сильно переписують відгук, коли вже правлять.</dd>
     <dt>Змінено</dt><dd>Очищений текст правки відрізняється від очищеного тексту AI.</dd>
     <dt>Цілі</dt><dd>Максимально допустимий відсоток редагування: HTML, JS, React, Node, DA (усі блоки): 1,00 %; AI (усі блоки): 3,00 %; Web Design і Mobile Design: 5,00 %; Service Design: 10,00 %. Джерело: команда QA.</dd>
-    <dt>Дані</dt><dd><code>adult_prod_lms_core.ai_homework_response_task</code>, модуль і курс через <code>homework</code> → <code>training_module</code>; пошта студента з <code>homework.student_username</code>.</dd>
-    <dt>Фільтри</dt><dd><code>edited IS NOT NULL</code>, тобто відгук збережено; без акаунтів QA (<code>edited_by NOT LIKE '%qa%'</code>); __N_COURSES__ курсів з перемикача вгорі.</dd>
-    <dt>Період</dt><dd>__PERIOD_SQL__</dd>
-    <dt>Хто редагував</dt><dd>Поле <code>edited_by</code>. У __SELF__ з __CHANGED__ змінених відгуків воно збігається з акаунтом студента. Причину треба уточнити в розробників.</dd>
-    <dt>Порівняння</dt><dd>__COMPARISON__</dd>
-    <dt>Звірка</dt><dd>__CHECK__</dd>
-    <dt>Актуальність</dt><dd>Дані вивантажено __ASOF__. Словник векторів: __VECTORS__.</dd>
+    <dt>Дані</dt><dd><code>adult_prod_lms_core.ai_homework_response_task</code>, модуль і курс через <code>homework</code> → <code>training_module</code>; збіг <code>edited_by</code> зі студентом перевіряється за <code>homework.student_username</code>, самі пошти на сторінку не потрапляють.</dd>
+    <dt>Фільтри</dt><dd><code>edited IS NOT NULL</code>, тобто відгук збережено; без акаунтів QA (<code>edited_by NOT LIKE '%qa%'</code>); <span class="w-ncourses"></span> курсів з перемикача вгорі.</dd>
+    <dt>Період</dt><dd><span class="w-sql"></span></dd>
+    <dt>Хто редагував</dt><dd>Поле <code>edited_by</code>. У <span class="w-self"></span> з <span class="w-changed"></span> змінених відгуків воно збігається з акаунтом студента. Причину треба уточнити в розробників.</dd>
+    <dt>Порівняння</dt><dd>У перемикачі «Період» — усі зібрані тижні (пн–нд). Плитки порівнюють обраний тиждень з попереднім.</dd>
+    <dt>Звірка</dt><dd><span class="w-check"></span></dd>
+    <dt>Актуальність</dt><dd>Дані вивантажено <span class="w-asof"></span>. Словник векторів: __VECTORS__.</dd>
   </dl>
 </section>
 
 </div>
+<script type="application/json" id="hw-data">__DATA__</script>
 <script>
-const D = __DATA__;
+const RAW = JSON.parse(document.getElementById("hw-data").textContent);
+function expand(w){
+  const S = a => ({n:a[0], changed:a[1], edit:a[2], depth:a[3], self_changed:a[4]});
+  const courses = w.c.map(c=>({course:c[0], full:c[1], grp:c[2], target:c[3], ...S(c.slice(4))}));
+  const days = w.days.map(iso=>({iso, label:iso.slice(8,10)+"."+iso.slice(5,7)}));
+  const daily = arr => arr.map((x,i)=>({day:days[i].label, n:x[0], changed:x[1]}));
+  const rev = x => ({course:courses[x[0]].course, module:RAW.names[x[1]], homework_id:x[2], order:x[3], version:x[4], sim:x[5], len_o:x[6], len_e:x[7], self:!!x[8]});
+  const by = {}; courses.forEach((c,i)=>{ by[c.course] = {daily: daily(w.dC[i]), top: w.r.filter(x=>x[0]==i).slice(0,20).map(rev)}; });
+  return {courses, days, total:S(w.t), all:{daily:daily(w.dA), top:w.r.slice(0,20).map(rev)}, by,
+          modules: w.m.map(m=>({course:courses[m[0]].course, target:courses[m[0]].target, module:RAW.names[m[1]], ...S(m.slice(2))}))};
+}
+const W = {updated: RAW.updated, weeks: RAW.weeks.map(w=>({...w, data: expand(w)}))};
+let wi = W.weeks.length-1, M = W.weeks[wi], D = M.data, P = wi>0 ? W.weeks[wi-1].data : null, MP = wi>0 ? W.weeks[wi-1] : null;
 const fmt = (x,d=2) => x==null ? "—" : x.toFixed(d).replace(".",",");
 const pc = x => x==null ? "—" : fmt(x)+" %";
 const pct = (a,b) => b ? (100*a/b).toFixed(1).replace(".",",")+" %" : "—";
 const el = (t,c,h) => {const e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e;};
 const $ = id => document.getElementById(id);
-const NO = "Мин. тиждень: немає даних";
+
 const ALL = "Усі курси";
 const GR=["Усі","Frontend","DA","Design","AI"];
 const short = s => s.length>60 ? s.slice(0,58)+"…" : s;
 const pl = (n,a,b,c) => {const m=n%10,h=n%100; return n+" "+(m==1&&h!=11?a:(m>=2&&m<=4&&(h<12||h>14)?b:c));};
 let cur = ALL, grp = "Усі", onlyChanged = true;
 
-const ids = {}; D.courses.forEach((c,i)=>ids[c.course]="c"+i);
-function fromHash(){const h=location.hash.slice(1); const c=D.courses.find(c=>ids[c.course]==h); return c?c.course:ALL;}
+const ids = {}; W.weeks.forEach(w=>w.data.courses.forEach(c=>{ if(!(c.course in ids)) ids[c.course]="c"+Object.keys(ids).length; }));
+function fromHash(){const h=location.hash.slice(1); const c=Object.keys(ids).find(k=>ids[k]==h); return c||ALL;}
 
+function view(DD, c){
+  if(!DD) return null;
+  const isAll = c==ALL, C = isAll ? null : DD.courses.find(x=>x.course==c);
+  if(!isAll && !C) return null;
+  const mods = DD.modules.filter(m=>isAll||m.course==c);
+  return {isAll, C, T: isAll ? DD.total : C, det: isAll ? DD.all : DD.by[c], mods,
+          over: mods.filter(m=>m.edit>m.target).sort((a,b)=>b.edit/b.target-a.edit/a.target),
+          overC: DD.courses.filter(x=>x.edit>x.target)};
+}
+function setMeta(){
+  document.querySelectorAll(".w-asof").forEach(e=>e.textContent=M.asof);
+  document.querySelectorAll(".w-short").forEach(e=>e.textContent=M.period_short);
+  document.querySelectorAll(".w-sql").forEach(e=>e.innerHTML=M.period_sql);
+  document.querySelectorAll(".w-check").forEach(e=>e.textContent=M.check);
+  document.querySelectorAll(".w-self").forEach(e=>e.textContent=D.total.self_changed);
+  document.querySelectorAll(".w-changed").forEach(e=>e.textContent=D.total.changed);
+  document.querySelectorAll(".w-ncourses").forEach(e=>e.textContent=D.courses.length);
+  $("period-note").textContent = "оновлено "+W.updated+" · тижнів: "+W.weeks.length;
+}
 function render(){
-  const isAll = cur==ALL;
-  const C = isAll ? null : D.courses.find(c=>c.course==cur);
-  const T = isAll ? D.total : C;
-  const det = isAll ? D.all : D.by[cur];
-  const mods = D.modules.filter(m=>isAll||m.course==cur);
-  const over = mods.filter(m=>m.edit>m.target).sort((a,b)=>b.edit/b.target-a.edit/a.target);
-  const overC = D.courses.filter(c=>c.edit>c.target);
+  if(cur!=ALL && !D.courses.find(c=>c.course==cur)) cur=ALL;
+  const V = view(D,cur), VP = view(P,cur);
+  const {isAll, C, T, det, mods, over, overC} = V;
 
   // switcher state
-  $("sw").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.c==cur));
-  $("sub").textContent = (isAll ? D.courses.length+" курсів" : C.full) + " · відгуки, створені __PERIOD_HUMAN__";
+  buildSwitcher();
+  $("sub").textContent = (isAll ? D.courses.length+" курсів" : C.full) + " · відгуки, створені "+M.period_human;
 
   // verdict
   const v2=[];
   if(isAll){
     $("v1").textContent = (overC.length? "Ціль перевищили "+overC.length+" з "+D.courses.length+" курсів. " : "Усі "+D.courses.length+" курсів у межах цілей. ") +
       "Ціль перевищили "+over.length+" з "+mods.length+" модулів"+(over.length? ", найсильніше "+over[0].course+", «"+short(over[0].module)+"»: "+pc(over[0].edit)+" при цілі "+pc(over[0].target)+".":".");
-    const des=D.courses.filter(c=>c.course.includes("Web")||c.course.includes("Mobile"));
-    const dc=des.reduce((s,c)=>s+c.changed,0), dn=des.reduce((s,c)=>s+c.n,0);
-    v2.push("Майже всі правки в дизайні: Web і Mobile Design дали "+dc+" з "+T.changed+" змінених відгуків, хоча це лише "+pct(dn,T.n)+" усіх збережених.");
+    if(T.changed){
+      const g={}; D.courses.forEach(c=>{g[c.grp]=g[c.grp]||{ch:0,n:0}; g[c.grp].ch+=c.changed; g[c.grp].n+=c.n;});
+      const [gn,gv]=Object.entries(g).sort((a,b)=>b[1].ch-a[1].ch)[0];
+      if(gv.ch/T.changed > 2*gv.n/T.n) v2.push("Найбільше правок у напрямі "+gn+": "+gv.ch+" з "+T.changed+" змінених відгуків, хоча це лише "+pct(gv.n,T.n)+" усіх збережених.");
+    }
   } else {
     const ok = C.edit<=C.target;
     $("v1").textContent = C.course+": відсоток редагування "+pc(C.edit)+" при цілі "+pc(C.target)+", "+(ok?"в межах цілі":"понад ціль")+". "+
@@ -237,19 +269,20 @@ function render(){
   $("v2").innerHTML = v2.map(x=>"<li>"+x+"</li>").join("");
 
   // tiles
+  const pv = f => VP ? "Мин. тиждень ("+MP.label+"): "+f(VP) : "Мин. тиждень: немає даних";
   const tiles = isAll ? [
-    ["Курсів понад ціль", overC.length+" з "+D.courses.length, "кожен курс порівнюється зі своєю ціллю"],
-    ["Модулів понад ціль", over.length+" з "+mods.length, over.length? [...new Set(over.map(m=>m.course))].join(", ") : "усі в межах цілей"],
-    ["Змінено відгуків", pct(T.changed,T.n), T.changed+" з "+T.n.toLocaleString("uk")+" збережених"],
-    ["Глибина правки", pc(T.depth), "середня за "+T.changed+" зміненими відгуками"]
+    ["Курсів понад ціль", overC.length+" з "+D.courses.length, "кожен курс порівнюється зі своєю ціллю", pv(v=>v.overC.length+" з "+P.courses.length)],
+    ["Модулів понад ціль", over.length+" з "+mods.length, over.length? [...new Set(over.map(m=>m.course))].join(", ") : "усі в межах цілей", pv(v=>v.over.length+" з "+v.mods.length)],
+    ["Змінено відгуків", pct(T.changed,T.n), T.changed+" з "+T.n.toLocaleString("uk")+" збережених", pv(v=>pct(v.T.changed,v.T.n)+", "+v.T.changed+" з "+v.T.n.toLocaleString("uk"))],
+    ["Глибина правки", pc(T.depth), T.changed? "середня за "+T.changed+" зміненими відгуками" : "немає змінених відгуків", pv(v=>pc(v.T.depth))]
   ] : [
-    ["Відсоток редагування", pc(C.edit), "ціль: не більше "+pc(C.target)+" · "+(C.edit<=C.target?"в межах цілі":"понад ціль")],
-    ["Модулів понад ціль", over.length+" з "+mods.length, over.length? short(over[0].module) : "усі в межах цілі"],
-    ["Змінено відгуків", pct(T.changed,T.n), T.changed+" з "+T.n.toLocaleString("uk")+" збережених"],
-    ["Глибина правки", pc(T.depth), T.changed? "середня за "+T.changed+" зміненими відгуками" : "немає змінених відгуків"]
+    ["Відсоток редагування", pc(C.edit), "ціль: не більше "+pc(C.target)+" · "+(C.edit<=C.target?"в межах цілі":"понад ціль"), pv(v=>pc(v.C.edit))],
+    ["Модулів понад ціль", over.length+" з "+mods.length, over.length? short(over[0].module) : "усі в межах цілі", pv(v=>v.over.length+" з "+v.mods.length)],
+    ["Змінено відгуків", pct(T.changed,T.n), T.changed+" з "+T.n.toLocaleString("uk")+" збережених", pv(v=>pct(v.T.changed,v.T.n)+", "+v.T.changed+" з "+v.T.n)],
+    ["Глибина правки", pc(T.depth), T.changed? "середня за "+T.changed+" зміненими відгуками" : "немає змінених відгуків", pv(v=>pc(v.T.depth))]
   ];
   $("tiles").innerHTML="";
-  tiles.forEach(([l,n,b])=>{const t=el("div","tile");t.append(el("div","lab",l),el("div","num",n),el("div","base",b),el("div","ctx",NO));$("tiles").append(t);});
+  tiles.forEach(([l,n,b,c])=>{const t=el("div","tile");t.append(el("div","lab",l),el("div","num",n),el("div","base",b),el("div","ctx",c));$("tiles").append(t);});
 
   // bars: all -> courses, course -> its modules
   const items = isAll ? D.courses.map(c=>({name:c.course,sub:c.grp,edit:c.edit,target:c.target,changed:c.changed,n:c.n,title:c.full}))
@@ -285,7 +318,7 @@ function render(){
   // days
   const dd=det.daily, mx=Math.max(1,...dd.map(d=>d.changed));
   const mn=Math.min(...dd.map(d=>d.changed)), mxc=Math.max(...dd.map(d=>d.changed));
-  $("h-days").textContent = T.changed ? "Змінених відгуків "+mn+"–"+mxc+" на день" + (isAll? ", сплеску в жоден із днів немає" : "") : "Цього тижня змінених відгуків немає в жоден день";
+  $("h-days").textContent = T.changed ? "Змінених відгуків "+mn+"–"+mxc+" на день" + (()=>{const v=dd.map(d=>d.changed).sort((a,b)=>a-b), med=v[Math.floor(v.length/2)], top=dd.reduce((a,b)=>b.changed>a.changed?b:a); return top.changed>Math.max(2*med,med+3)? ", найбільше "+top.day+": "+top.changed : ", сплеску в жоден із днів немає";})() : "Цього тижня змінених відгуків немає в жоден день";
   $("days").innerHTML=""; $("dlabels").innerHTML="";
   const WD=["Нд","Пн","Вт","Ср","Чт","Пт","Сб"]; const dn={}; (D.days||[]).forEach(x=>{dn[x.label]=WD.at(new Date(x.iso+"T12:00:00Z").getUTCDay())+" "+x.label;});
   dd.forEach(d=>{const c=el("div","day");c.title=d.day+": змінено "+d.changed+" з "+d.n;
@@ -293,10 +326,10 @@ function render(){
     $("days").append(c);$("dlabels").append(el("div",null,dn[d.day]||d.day));});
 
   // top
-  const tp=det.top, ss=tp.filter(r=>r.editor==r.student).length;
+  const tp=det.top, ss=tp.filter(r=>r.self).length;
   $("h-top").textContent = tp.length ? "Найбільш переписані відгуки: у "+ss+" з "+tp.length+" редагує акаунт самого студента" : "Змінених відгуків немає";
-  $("top").innerHTML = tp.length ? "<thead><tr><th>Курс</th><th>Модуль</th><th>Студент</th><th class='n'>homework_id</th><th class='n'>Задача</th><th class='n'>Версія</th><th>Редагував</th><th class='n'>Схожість</th><th class='n'>Довжина: AI → правка</th></tr></thead><tbody>"+
-    tp.map(r=>"<tr><td>"+r.course+"</td><td>"+r.module+"</td><td>"+r.student+"</td><td class='n'>"+r.homework_id+"</td><td class='n'>"+r.order+"</td><td class='n'>"+r.version+"</td><td>"+(r.editor==r.student?"<span class='tag same'>= студент</span>":r.editor)+"</td><td class='n'>"+fmt(r.sim)+"</td><td class='n'>"+r.len_o+" → "+r.len_e+"</td></tr>").join("")+"</tbody>"
+  $("top").innerHTML = tp.length ? "<thead><tr><th>Курс</th><th>Модуль</th><th class='n'>homework_id</th><th class='n'>Задача</th><th class='n'>Версія</th><th>Хто редагував</th><th class='n'>Схожість</th><th class='n'>Довжина: AI → правка</th></tr></thead><tbody>"+
+    tp.map(r=>"<tr><td>"+r.course+"</td><td>"+r.module+"</td><td class='n'>"+r.homework_id+"</td><td class='n'>"+r.order+"</td><td class='n'>"+r.version+"</td><td>"+(r.self?"<span class='tag same'>студент</span>":"ментор")+"</td><td class='n'>"+fmt(r.sim)+"</td><td class='n'>"+r.len_o+" → "+r.len_e+"</td></tr>").join("")+"</tbody>"
     : "<tbody><tr><td class='empty'>Немає даних: цього тижня в курсі жоден відгук не змінено.</td></tr></tbody>";
 }
 
@@ -320,12 +353,20 @@ function modules(){
   $("cnt").textContent="Показано "+rows.length+" з "+all.length+" модулів";
 }
 
-// course switcher
-const sw=$("sw");
-[ALL,...D.courses.map(c=>c.course)].forEach(n=>{const c=D.courses.find(x=>x.course==n);
-  const b=el("button",null,n+(c&&c.edit>c.target?" ●":""));b.type="button";b.dataset.c=n;
-  b.onclick=()=>{cur=n; try{history.replaceState(null,"",n==ALL?location.pathname+location.search:"#"+ids[n]);}catch(e){} render();};
-  sw.append(b);});
+// course switcher (rebuilt per week: course list and "over target" dots can change)
+function buildSwitcher(){
+  const sw=$("sw"); sw.innerHTML="";
+  [ALL,...D.courses.map(c=>c.course)].forEach(n=>{const c=D.courses.find(x=>x.course==n);
+    const b=el("button",null,n+(c&&c.edit>c.target?" ●":""));b.type="button";b.dataset.c=n;b.setAttribute("aria-pressed",n==cur);
+    if(c&&c.edit>c.target) b.title="понад ціль";
+    b.onclick=()=>{cur=n; try{history.replaceState(null,"",n==ALL?location.pathname+location.search:"#"+ids[n]);}catch(e){} render();};
+    sw.append(b);});
+}
+// period switcher, newest first
+const ps=$("period");
+W.weeks.map((w,i)=>[w,i]).reverse().forEach(([w,i])=>{const o=el("option",null,w.label+(i==W.weeks.length-1?" (останній)":""));o.value=i;ps.append(o);});
+ps.value=wi;
+ps.onchange=()=>{wi=+ps.value; M=W.weeks[wi]; D=M.data; P=wi>0?W.weeks[wi-1].data:null; MP=wi>0?W.weeks[wi-1]:null; setMeta(); render();};
 // module filters
 const ch=$("chips");
 GR.forEach(n=>{const b=el("button",null,n);b.type="button";b.setAttribute("aria-pressed",n==grp);
@@ -336,7 +377,7 @@ const cn=el("span","count");cn.id="cnt";
 const tblCard=$("modules").closest("section"); tblCard.insertBefore(cn, tblCard.querySelector(".scroll"));
 cn.style.display="block"; cn.style.margin="0 0 8px";
 window.addEventListener("hashchange",()=>{cur=fromHash();render();});
-cur=fromHash(); render();
+cur=fromHash(); setMeta(); render();
 </script>
 </body>
 </html>

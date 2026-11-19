@@ -21,8 +21,11 @@
 ```bash
 pip install -r requirements.txt
 python -m hwreport.compute hw-edits.csv out/
-python -m hwreport.dashboard out/agg.json out/index.html --start 2026-11-09 --end 2026-11-15
+python -m hwreport.dashboard out/index.html --week out/agg.json --start 2026-11-09 --end 2026-11-15 \
+    --merge <поточний index.html з вікі>
 ```
+
+`--merge` бере тижні з уже опублікованої сторінки й додає новий. Так у вікі живе одна сторінка з перемикачем періоду, за замовчуванням останні 8 тижнів (`--keep`). На сторінку потрапляють лише агрегати й `homework_id`: пошт студентів і менторів там немає, тож її можна публікувати в `wiki/dashboards/` для всієї компанії.
 
 CSV — це результат запитів зі сценарію LMS, по одному курсу, сторінками по 200 рядків. Якщо в CSV є курс, якого немає в `courses.json`, `compute` зупиниться і назве його.
 
